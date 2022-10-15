@@ -9,35 +9,6 @@ void main() {
 
 enum Menu { completed, favourite, deleteCompleted, editBranch, all }
 
-List<PopupMenuItem<Menu>> menus = [
-  const PopupMenuItem<Menu>(
-      value: Menu.completed,
-      child: ListTile(
-        leading: Icon(Icons.check_circle),
-        title: Text('Только выполненные'),
-      )),
-  const PopupMenuItem<Menu>(
-      value: Menu.favourite,
-      child: ListTile(
-        leading: Icon(Icons.star),
-        title: Text('Только избранные'),
-      )),
-  const PopupMenuItem<Menu>(
-      value: Menu.deleteCompleted,
-      child: ListTile(
-          leading: Icon(Icons.delete), title: Text("Удалить выполненные"))),
-  const PopupMenuItem<Menu>(
-      value: Menu.editBranch,
-      child: ListTile(
-          leading: Icon(Icons.edit), title: Text("Редактировать ветку"))),
-  const PopupMenuItem<Menu>(
-      value: Menu.all,
-      child: ListTile(
-        leading: Icon(Icons.star_border),
-        title: Text("Все задачи"),
-      ))
-];
-
 class MyApp extends StatelessWidget {
   const MyApp({super.key});
 
@@ -79,7 +50,35 @@ class _MyHomePageState extends State<MyHomePage> {
   List<Task> filteredTasks = [];
   final _formKey = GlobalKey<FormState>();
   Menu currentState = Menu.all;
-  List<int> menuIndices = [0, 1, 4];
+  List<int> menuIndeces = [0, 1, 2];
+  List<PopupMenuItem<Menu>> menus = [
+    const PopupMenuItem<Menu>(
+        value: Menu.completed,
+        child: ListTile(
+          leading: Icon(Icons.check_circle),
+          title: Text('Только выполненные'),
+        )),
+    const PopupMenuItem<Menu>(
+        value: Menu.favourite,
+        child: ListTile(
+          leading: Icon(Icons.star),
+          title: Text('Только избранные'),
+        )),
+    const PopupMenuItem<Menu>(
+        value: Menu.deleteCompleted,
+        child: ListTile(
+            leading: Icon(Icons.delete), title: Text("Удалить выполненные"))),
+    const PopupMenuItem<Menu>(
+        value: Menu.editBranch,
+        child: ListTile(
+            leading: Icon(Icons.edit), title: Text("Редактировать ветку"))),
+  ];
+  PopupMenuItem<Menu> hiddenMenu = PopupMenuItem<Menu>(
+      value: Menu.all,
+      child: ListTile(
+        leading: Icon(Icons.star_border),
+        title: Text("Все задачи"),
+      ));
 
   @override
   void initState() {
@@ -130,16 +129,13 @@ class _MyHomePageState extends State<MyHomePage> {
               } else if (value == Menu.deleteCompleted) {
                 await deleteDialog();
               } else if (value == Menu.completed) {
-                swapMenu(menuIndices[0]);
-                swapIndices(0);
+                swapMenu(menuIndeces.indexWhere((element) => element == 0));
                 filter(Menu.completed);
               } else if (value == Menu.favourite) {
-                swapMenu(menuIndices[1]);
-                swapIndices(1);
+                swapMenu(menuIndeces.indexWhere((element) => element == 1));
                 filter(Menu.favourite);
               } else if (value == Menu.all) {
-                swapMenu(menuIndices[2]);
-                swapIndices(2);
+                swapMenu(menuIndeces.indexWhere((element) => element == 2));
                 filter(Menu.all);
               }
             },
@@ -150,19 +146,31 @@ class _MyHomePageState extends State<MyHomePage> {
 
       body: Container(
         child: filteredTasks.isEmpty
-            ? Stack(children: <Widget>[
-                Align(
-                  alignment: Alignment.center,
-                  child:
-                      SvgPicture.asset('assets/images/todolist_background.svg'),
-                ),
-                Align(
-                    alignment: Alignment.center,
-                    child: SvgPicture.asset('assets/images/todolist.svg')),
-              ])
+            ? Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                crossAxisAlignment: CrossAxisAlignment.center,
+                children: [
+                  Stack(children: <Widget>[
+                    Align(
+                      alignment: Alignment.center,
+                      child: SvgPicture.asset(
+                          'assets/images/todolist_background.svg'),
+                    ),
+                    Align(
+                        alignment: Alignment.center,
+                        child: SvgPicture.asset('assets/images/todolist.svg')),
+                  ]),
+                  SizedBox(
+                      width: 120,
+                      child: Text(
+                        "На данный момент задачи отсутствуют",
+                        textAlign: TextAlign.center,
+                      ))
+                ],
+              )
             : ListView.separated(
-                physics: AlwaysScrollableScrollPhysics(),
-                padding: EdgeInsets.all(10),
+                physics: const AlwaysScrollableScrollPhysics(),
+                padding: const EdgeInsets.all(10),
                 itemCount: filteredTasks.length,
                 scrollDirection: Axis.vertical,
                 shrinkWrap: true,
@@ -171,7 +179,7 @@ class _MyHomePageState extends State<MyHomePage> {
 
                   return Dismissible(
                     direction: DismissDirection.endToStart,
-                    key: ValueKey<Task>(task),
+                    key: ValueKey<Uuid>(task.uuid),
                     background: Container(
                       color: Colors.red,
                       child: const Align(
@@ -385,12 +393,11 @@ class _MyHomePageState extends State<MyHomePage> {
   }
 
   void swapMenu(int i) {
-    final temp = menus[4];
-    menus[4] = menus[i];
-    menus[i] = temp;
-  }
-
-  void swapIndices(int i) {
-    //TODO
+    final temp1 = hiddenMenu;
+    hiddenMenu = menus[i];
+    menus[i] = temp1;
+    final temp2 = menuIndeces[2];
+    menuIndeces[2] = menuIndeces[i];
+    menuIndeces[i] = temp2;
   }
 }
