@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import 'package:uuid/uuid.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 
@@ -8,6 +7,8 @@ void main() {
 }
 
 enum Menu { completed, favourite, deleteCompleted, editBranch, all }
+
+var uuid = const Uuid();
 
 class MyApp extends StatelessWidget {
   const MyApp({super.key});
@@ -29,10 +30,10 @@ class Task {
   bool completed = false;
   String name = '';
   bool favourite = false;
-  Uuid uuid = Uuid();
+  var id = uuid.v1();
 
-  Task(String name) {
-    this.name = name;
+  Task(String input) {
+    name = input;
   }
 }
 
@@ -46,11 +47,11 @@ class MyHomePage extends StatefulWidget {
 class _MyHomePageState extends State<MyHomePage> {
   String _title = "Учеба";
   late TextEditingController controller;
-  List<Task> _tasks = [];
+  List<Task> tasks = [];
   List<Task> filteredTasks = [];
   final _formKey = GlobalKey<FormState>();
   Menu currentState = Menu.all;
-  List<int> menuIndeces = [0, 1, 2];
+  List<int> menuIndexes = [0, 1, 2];
   List<PopupMenuItem<Menu>> menus = [
     const PopupMenuItem<Menu>(
         value: Menu.completed,
@@ -73,7 +74,7 @@ class _MyHomePageState extends State<MyHomePage> {
         child: ListTile(
             leading: Icon(Icons.edit), title: Text("Редактировать ветку"))),
   ];
-  PopupMenuItem<Menu> hiddenMenu = PopupMenuItem<Menu>(
+  PopupMenuItem<Menu> hiddenMenu = const PopupMenuItem<Menu>(
       value: Menu.all,
       child: ListTile(
         leading: Icon(Icons.star_border),
@@ -96,7 +97,7 @@ class _MyHomePageState extends State<MyHomePage> {
 
   void changeCom(int index) {
     setState(() {
-      _tasks[index].completed = !_tasks[index].completed;
+      tasks[index].completed = !tasks[index].completed;
     });
   }
 
@@ -104,7 +105,7 @@ class _MyHomePageState extends State<MyHomePage> {
     final name = await addTaskDialog();
     if (name == null) return;
     setState(() {
-      _tasks.add((Task(name)));
+      tasks.add((Task(name)));
       if (currentState == Menu.all) filter(Menu.all);
     });
   }
@@ -120,7 +121,7 @@ class _MyHomePageState extends State<MyHomePage> {
           PopupMenuButton<Menu>(
             onSelected: (value) async {
               if (value == Menu.editBranch) {
-                final title = await brachDialog();
+                final title = await branchDialog();
                 if (title == null) return;
                 setState(() {
                   _title = title;
@@ -129,13 +130,13 @@ class _MyHomePageState extends State<MyHomePage> {
               } else if (value == Menu.deleteCompleted) {
                 await deleteDialog();
               } else if (value == Menu.completed) {
-                swapMenu(menuIndeces.indexWhere((element) => element == 0));
+                swapMenu(menuIndexes.indexWhere((element) => element == 0));
                 filter(Menu.completed);
               } else if (value == Menu.favourite) {
-                swapMenu(menuIndeces.indexWhere((element) => element == 1));
+                swapMenu(menuIndexes.indexWhere((element) => element == 1));
                 filter(Menu.favourite);
               } else if (value == Menu.all) {
-                swapMenu(menuIndeces.indexWhere((element) => element == 2));
+                swapMenu(menuIndexes.indexWhere((element) => element == 2));
                 filter(Menu.all);
               }
             },
@@ -160,7 +161,7 @@ class _MyHomePageState extends State<MyHomePage> {
                         alignment: Alignment.center,
                         child: SvgPicture.asset('assets/images/todolist.svg')),
                   ]),
-                  SizedBox(
+                  const SizedBox(
                       width: 120,
                       child: Text(
                         "На данный момент задачи отсутствуют",
@@ -179,7 +180,7 @@ class _MyHomePageState extends State<MyHomePage> {
 
                   return Dismissible(
                     direction: DismissDirection.endToStart,
-                    key: ValueKey<Uuid>(task.uuid),
+                    key: ValueKey<String>(task.id),
                     background: Container(
                       color: Colors.red,
                       child: const Align(
@@ -191,7 +192,7 @@ class _MyHomePageState extends State<MyHomePage> {
                       ),
                     ),
                     child: ListTile(
-                      shape: RoundedRectangleBorder(
+                      shape: const RoundedRectangleBorder(
                           borderRadius: BorderRadius.horizontal(
                               left: Radius.circular(5),
                               right: Radius.circular(5))),
@@ -210,6 +211,9 @@ class _MyHomePageState extends State<MyHomePage> {
                         shape: const CircleBorder(),
                         onChanged: (value) {
                           changeCom(i);
+                          if (currentState == Menu.completed) {
+                            filter(Menu.completed);
+                          }
                         },
                       ),
                       trailing: IconButton(
@@ -225,14 +229,17 @@ class _MyHomePageState extends State<MyHomePage> {
                         onPressed: () {
                           setState(() {
                             task.favourite = !task.favourite;
+                            if (currentState == Menu.favourite) {
+                              filter(Menu.favourite);
+                            }
                           });
                         },
                       ),
                     ),
                     onDismissed: (direction) {
                       setState(() {
-                        _tasks.removeWhere(
-                            (element) => element.uuid == filteredTasks[i].uuid);
+                        tasks.removeWhere(
+                            (element) => element.id == filteredTasks[i].id);
                         filter(currentState);
                       });
                     },
@@ -261,17 +268,17 @@ class _MyHomePageState extends State<MyHomePage> {
             controller: controller,
             autofocus: true,
             validator: (value) {
-              if (value == null || value.isEmpty)
+              if (value == null || value.isEmpty) {
                 return 'Название не может быть пустым';
-              else if (value.length > 40) return 'Слишком длинное название';
+              } else if (value.length > 40) {
+                return 'Слишком длинное название';
+              }
               return null;
             },
             decoration: const InputDecoration(
               hintText: 'Введите название задачи',
             ),
             maxLength: 40,
-            maxLengthEnforcement:
-                MaxLengthEnforcement.truncateAfterCompositionEnds,
             minLines: 1,
             maxLines: 3,
             onFieldSubmitted: (_) => submit(),
@@ -291,7 +298,7 @@ class _MyHomePageState extends State<MyHomePage> {
     );
   }
 
-  Future<String?> brachDialog() {
+  Future<String?> branchDialog() {
     controller.text = _title;
     return showDialog<String>(
       context: context,
@@ -304,17 +311,17 @@ class _MyHomePageState extends State<MyHomePage> {
             controller: controller,
             autofocus: true,
             validator: (value) {
-              if (value == null || value.isEmpty)
+              if (value == null || value.isEmpty) {
                 return 'Название не может быть пустым';
-              else if (value.length > 40) return 'Слишком длинное название';
+              } else if (value.length > 40) {
+                return 'Слишком длинное название';
+              }
               return null;
             },
             decoration: const InputDecoration(
               hintText: 'Введите название ветки',
             ),
             maxLength: 40,
-            maxLengthEnforcement:
-                MaxLengthEnforcement.truncateAfterCompositionEnds,
             minLines: 1,
             maxLines: 3,
             onFieldSubmitted: (_) => submit(),
@@ -350,12 +357,11 @@ class _MyHomePageState extends State<MyHomePage> {
   }
 
   void deleteCompleted() {
-    for (int i = 0; i < _tasks.length; i++) {
-      if (_tasks[i].completed) {
+    for (int i = 0; i < tasks.length; i++) {
+      if (tasks[i].completed) {
         setState(() {
-          filteredTasks
-              .removeWhere((element) => element.uuid == _tasks[i].uuid);
-          _tasks.removeAt(i);
+          filteredTasks.removeWhere((element) => element.id == tasks[i].id);
+          tasks.removeAt(i);
         });
         i--;
       }
@@ -366,15 +372,15 @@ class _MyHomePageState extends State<MyHomePage> {
   void filter(Menu value) {
     if (value == Menu.favourite) {
       setState(() {
-        filteredTasks = _tasks.where((task) => task.favourite == true).toList();
+        filteredTasks = tasks.where((task) => task.favourite == true).toList();
       });
     } else if (value == Menu.completed) {
       setState(() {
-        filteredTasks = _tasks.where((task) => task.completed == true).toList();
+        filteredTasks = tasks.where((task) => task.completed == true).toList();
       });
     } else if (value == Menu.all) {
       setState(() {
-        filteredTasks = _tasks;
+        filteredTasks = tasks;
       });
     }
     setState(() {
@@ -396,8 +402,8 @@ class _MyHomePageState extends State<MyHomePage> {
     final temp1 = hiddenMenu;
     hiddenMenu = menus[i];
     menus[i] = temp1;
-    final temp2 = menuIndeces[2];
-    menuIndeces[2] = menuIndeces[i];
-    menuIndeces[i] = temp2;
+    final temp2 = menuIndexes[2];
+    menuIndexes[2] = menuIndexes[i];
+    menuIndexes[i] = temp2;
   }
 }
