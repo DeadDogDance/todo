@@ -130,13 +130,13 @@ class _MyHomePageState extends State<MyHomePage> {
               } else if (value == Menu.deleteCompleted) {
                 await deleteDialog();
               } else if (value == Menu.completed) {
-                swapMenu(menuIndexes.indexWhere((element) => element == 0));
+                swapMenu(Menu.completed);
                 filter(Menu.completed);
               } else if (value == Menu.favourite) {
-                swapMenu(menuIndexes.indexWhere((element) => element == 1));
+                swapMenu(Menu.favourite);
                 filter(Menu.favourite);
               } else if (value == Menu.all) {
-                swapMenu(menuIndexes.indexWhere((element) => element == 2));
+                swapMenu(Menu.all);
                 filter(Menu.all);
               }
             },
@@ -398,12 +398,35 @@ class _MyHomePageState extends State<MyHomePage> {
     controller.clear();
   }
 
-  void swapMenu(int i) {
-    final temp1 = hiddenMenu;
-    hiddenMenu = menus[i];
-    menus[i] = temp1;
-    final temp2 = menuIndexes[2];
-    menuIndexes[2] = menuIndexes[i];
-    menuIndexes[i] = temp2;
+  void swapMenu(Menu state) {
+    if (currentState == Menu.all) {
+      if (state == Menu.completed) {
+        final temp1 = hiddenMenu;
+        hiddenMenu = menus[0];
+        menus[0] = temp1;
+      } else {
+        final temp1 = hiddenMenu;
+        hiddenMenu = menus[1];
+        menus[1] = temp1;
+      }
+    } else if (currentState == Menu.completed) {
+      final temp1 = hiddenMenu;
+      hiddenMenu = menus[0];
+      menus[0] = temp1;
+      if (state == Menu.favourite) {
+        final temp2 = hiddenMenu;
+        hiddenMenu = menus[1];
+        menus[1] = temp2;
+      }
+    } else {
+      final temp1 = hiddenMenu;
+      hiddenMenu = menus[1];
+      menus[1] = temp1;
+      if (state == Menu.completed) {
+        final temp2 = hiddenMenu;
+        hiddenMenu = menus[0];
+        menus[0] = temp2;
+      }
+    }
   }
 }
