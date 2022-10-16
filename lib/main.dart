@@ -50,6 +50,7 @@ class _MyHomePageState extends State<MyHomePage> {
   List<Task> filteredTasks = [];
   final _formKey = GlobalKey<FormState>();
   Menu currentState = Menu.all;
+  List<int> menuIndexes = [0, 1, 2];
   List<PopupMenuItem<Menu>> menus = [
     const PopupMenuItem<Menu>(
         value: Menu.completed,
