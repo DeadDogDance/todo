@@ -1,12 +1,13 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_svg/flutter_svg.dart';
-import 'package:todo/widgets/branch_popupmenu.dart';
-import 'package:todo/widgets/rename_branch.dart';
+import 'package:uuid/uuid.dart';
 
 import '../entities/task.dart';
-import '../entities/assets.dart';
-import '../widgets/task_card.dart';
-import '../widgets/add_task_dialog.dart';
+import './branch_popupmenu.dart';
+import './rename_branch.dart';
+import './task_card.dart';
+import './add_task_dialog.dart';
+import './empty_branch.dart';
+import './confirmation_dialog.dart';
 
 class TaskListPage extends StatefulWidget {
   const TaskListPage({super.key});
@@ -27,64 +28,13 @@ class _TaskListPageState extends State<TaskListPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Colors.lightBlue,
-      appBar: AppBar(
-        backgroundColor: Colors.deepPurpleAccent,
-        title: Text(_title),
-        actions: <Widget>[
-          AppBarPopUpMenu(
-            isShowCompleted: _isCompletedFilter,
-            isShowFavorite: _isFavoriteFilter,
-            onCompleted: _onCompletedFilter,
-            onFavorite: _onFavoriteFilter,
-            onDelete: _showDeleteDialog,
-            onEdit: _showEditBranchDialog,
-          )
-        ],
-      ),
-      body: Container(
-        child: _filteredTasks.isEmpty
-            ? Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                crossAxisAlignment: CrossAxisAlignment.center,
-                children: [
-                  Stack(children: <Widget>[
-                    Align(
-                      alignment: Alignment.center,
-                      child: SvgPicture.asset(Assets.todoListBackground),
-                    ),
-                    Align(
-                      alignment: Alignment.center,
-                      child: SvgPicture.asset(Assets.todoList),
-                    ),
-                  ]),
-                  const SizedBox(
-                    child: Text(
-                      "На данный\n момент задачи\n отсутствуют",
-                      textAlign: TextAlign.center,
-                    ),
-                  ),
-                ],
-              )
-            : ListView.separated(
-                physics: const AlwaysScrollableScrollPhysics(),
-                padding: const EdgeInsets.all(10),
-                itemCount: _filteredTasks.length,
-                scrollDirection: Axis.vertical,
-                shrinkWrap: true,
-                itemBuilder: (context, index) => TaskCard(
-                  task: _filteredTasks[index],
-                  key: ValueKey(_tasks[index].id),
-                  onDismissSwap: (_) => _deleteTask(taskIndex: index),
-                  onCheckboxTap: (_) => _toggleCompletion(taskIndex: index),
-                  onFavouriteTap: () => _toggleFavourite(taskIndex: index),
-                ),
-                separatorBuilder: (context, index) => const Divider(),
-              ),
-      ),
+      backgroundColor: const Color(0xffb5c9fd),
+      appBar: createAppBar(),
+      body: _filteredTasks.isEmpty ? const EmptyBranch() : createListView(),
       floatingActionButton: FloatingActionButton(
         onPressed: _showAddTaskDialog,
         tooltip: 'Add task',
+        backgroundColor: Colors.teal,
         child: const Icon(Icons.add),
       ),
     );
@@ -93,12 +43,17 @@ class _TaskListPageState extends State<TaskListPage> {
   Future<void> _showAddTaskDialog() async {
     final enteredText = await showDialog<String>(
       context: context,
-      builder: (context) => const TaskCreationDialog(),
+      builder: (_) => const TaskCreationDialog(),
     );
 
     if (enteredText != null) {
       if (mounted) {
-        _tasks.add(Task(title: enteredText));
+        _tasks.add(
+          Task(
+            title: enteredText,
+            id: const Uuid().v4(),
+          ),
+        );
         _filter();
       }
     }
@@ -107,7 +62,7 @@ class _TaskListPageState extends State<TaskListPage> {
   Future<void> _showEditBranchDialog() async {
     final enteredText = await showDialog<String>(
       context: context,
-      builder: (context) => RenameBranchDialog(branchTitle: _title),
+      builder: (_) => RenameBranchDialog(branchTitle: _title),
     );
 
     if (enteredText != null) {
@@ -119,102 +74,90 @@ class _TaskListPageState extends State<TaskListPage> {
     }
   }
 
-  Future<void> _showDeleteDialog() {
-    return showDialog(
+  Future<void> _showDeleteDialog() async {
+    await showDialog<String>(
       context: context,
-      barrierDismissible: false,
-      builder: (_) => AlertDialog(
-        title: const Text('Подтвердите удаление'),
-        actions: [
-          TextButton(
-              onPressed: () => Navigator.of(context).pop(),
-              child: const Text("Отмена")),
-          TextButton(
-              onPressed: _deleteCompletedTasks,
-              child: const Text('Подтвердить')),
-        ],
+      builder: (_) => ConfirmationDialog(
+        onOk: _deleteCompletedTasks,
+        title: 'Подтвердите удаление',
       ),
     );
   }
 
-  void _toggleCompletion({required int taskIndex}) {
-    final index = _tasks
-        .indexWhere((element) => element.id == _filteredTasks[taskIndex].id);
+  void _toggleCompletion({required String taskId}) {
+    final index = _tasks.indexWhere((element) => element.id == taskId);
 
-    setState(() {
-      _tasks[index] =
-          _tasks[index].copyWith(isCompleted: !_tasks[index].isCompleted);
-    });
-
-    if (_isCompletedFilter || _isFavoriteFilter) {
-      _filter();
-    }
+    _tasks[index] = _tasks[index].copyWith(isCompleted: !_tasks[index].isCompleted);
+    _filter();
   }
 
-  void _toggleFavourite({required int taskIndex}) {
-    final index = _tasks
-        .indexWhere((element) => element.id == _filteredTasks[taskIndex].id);
+  void _toggleFavourite({required String taskId}) {
+    final index = _tasks.indexWhere((element) => element.id == taskId);
+    _tasks[index] = _tasks[index].copyWith(isFavourite: !_tasks[index].isFavourite);
 
-    setState(() {
-      _tasks[index] =
-          _tasks[index].copyWith(isFavourite: !_tasks[index].isFavourite);
-    });
-
-    if (_isFavoriteFilter || _isCompletedFilter) {
-      _filter();
-    }
+    _filter();
   }
 
-  void _deleteTask({required int taskIndex}) {
-    setState(() {
-      _tasks
-          .removeWhere((element) => element.id == _filteredTasks[taskIndex].id);
-      _filter();
-    });
+  void _deleteTask({required String taskId}) {
+    _tasks.removeWhere((element) => element.id == taskId);
+    _filter();
   }
 
   void _deleteCompletedTasks() {
     _tasks.removeWhere((task) => task.isCompleted);
     _filter();
-    Navigator.of(context).pop();
   }
 
   void _onFavoriteFilter() {
-    setState(() {
-      _isFavoriteFilter = !_isFavoriteFilter;
-    });
+    _isFavoriteFilter = !_isFavoriteFilter;
     _filter();
   }
 
   void _onCompletedFilter() {
-    setState(() {
-      _isCompletedFilter = !_isCompletedFilter;
-    });
+    _isCompletedFilter = !_isCompletedFilter;
     _filter();
   }
 
   void _filter() {
-    if (_isCompletedFilter && _isFavoriteFilter) {
-      setState(() {
-        _filteredTasks = _tasks
-            .where(
-                (task) => task.isFavourite == true && task.isCompleted == false)
-            .toList();
-      });
-    } else if (_isCompletedFilter) {
-      setState(() {
-        _filteredTasks =
-            _tasks.where((task) => task.isCompleted == false).toList();
-      });
-    } else if (_isFavoriteFilter) {
-      setState(() {
-        _filteredTasks =
-            _tasks.where((task) => task.isFavourite == true).toList();
-      });
-    } else {
-      setState(() {
-        _filteredTasks = _tasks;
-      });
+    Iterable<Task> showTasksIterable = _tasks;
+    if (_isCompletedFilter) {
+      showTasksIterable = showTasksIterable.where((task) => !task.isCompleted);
     }
+    if (_isFavoriteFilter) {
+      showTasksIterable = showTasksIterable.where((task) => !task.isFavourite);
+    }
+    setState(() {
+      _filteredTasks = showTasksIterable.toList();
+    });
   }
+
+  ListView createListView() => ListView.separated(
+        physics: const AlwaysScrollableScrollPhysics(),
+        padding: const EdgeInsets.all(10),
+        itemCount: _filteredTasks.length,
+        scrollDirection: Axis.vertical,
+        shrinkWrap: true,
+        itemBuilder: (context, index) => TaskCard(
+          task: _filteredTasks[index],
+          onDismissSwap: (_) => _deleteTask(taskId: _filteredTasks[index].id),
+          onCheckboxTap: (_) => _toggleCompletion(taskId: _filteredTasks[index].id),
+          onFavouriteTap: () => _toggleFavourite(taskId: _filteredTasks[index].id),
+        ),
+        separatorBuilder: (_, __) => const Divider(),
+      );
+
+  AppBar createAppBar() => AppBar(
+        backgroundColor: const Color(0xff6202ee),
+        title: Text(_title),
+        actions: <Widget>[
+          AppBarPopUpMenu(
+            isShowCompleted: _isCompletedFilter,
+            isShowFavorite: _isFavoriteFilter,
+            onCompleted: _onCompletedFilter,
+            onFavorite: _onFavoriteFilter,
+            onDelete: _showDeleteDialog,
+            onEdit: _showEditBranchDialog,
+          )
+        ],
+      );
 }

@@ -47,10 +47,14 @@ class TaskCard extends StatelessWidget {
               shape: const CircleBorder(),
               onChanged: onCheckboxTap,
             ),
-            Text(task.title),
-            const Spacer(),
+            Expanded(
+              child: Text(task.title),
+            ),
             IconButton(
-              icon: Icon(task.isFavourite ? Icons.star : Icons.star_border),
+              icon: Icon(
+                task.isFavourite ? Icons.star : Icons.star_border,
+                color: Colors.orange,
+              ),
               onPressed: onFavouriteTap,
             ),
           ],

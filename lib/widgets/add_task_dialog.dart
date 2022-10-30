@@ -28,7 +28,7 @@ class _TaskCreationDialogState extends State<TaskCreationDialog> {
           autofocus: true,
           controller: controller,
           validator: (value) {
-            if (value == null || value.isEmpty || value.trim().isEmpty) {
+            if (value == null || value.trim().isEmpty) {
               return 'Название не может быть пустым';
             } else if (value.length > 40) {
               return 'Слишком длинное название';
@@ -47,7 +47,7 @@ class _TaskCreationDialogState extends State<TaskCreationDialog> {
       actions: [
         TextButton(
           onPressed: () => Navigator.of(context).pop(),
-          child: const Text("Отмена"),
+          child: const Text('Отмена'),
         ),
         TextButton(
           onPressed: () {

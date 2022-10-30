@@ -21,9 +21,7 @@ class AppBarPopUpMenu extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return PopupMenuButton(
-      onSelected: (value) {
-        value();
-      },
+      onSelected: (value) => value(),
       itemBuilder: (BuildContext context) => [
         PopupMenuItem(
           value: onCompleted,
@@ -38,16 +36,17 @@ class AppBarPopUpMenu extends StatelessWidget {
                 ),
         ),
         PopupMenuItem(
-            value: onFavorite,
-            child: isShowFavorite
-                ? const ListTile(
-                    leading: Icon(Icons.star_border),
-                    title: Text('Все задачи'),
-                  )
-                : const ListTile(
-                    leading: Icon(Icons.star),
-                    title: Text('Только избранные'),
-                  )),
+          value: onFavorite,
+          child: isShowFavorite
+              ? const ListTile(
+                  leading: Icon(Icons.star_border),
+                  title: Text('Все задачи'),
+                )
+              : const ListTile(
+                  leading: Icon(Icons.star),
+                  title: Text('Только избранные'),
+                ),
+        ),
         PopupMenuItem(
           value: onDelete,
           child: const ListTile(
