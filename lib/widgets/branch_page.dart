@@ -124,7 +124,7 @@ class _TaskListPageState extends State<TaskListPage> {
       showTasksIterable = showTasksIterable.where((task) => !task.isCompleted);
     }
     if (_isFavoriteFilter) {
-      showTasksIterable = showTasksIterable.where((task) => !task.isFavourite);
+      showTasksIterable = showTasksIterable.where((task) => task.isFavourite);
     }
     setState(() {
       _filteredTasks = showTasksIterable.toList();

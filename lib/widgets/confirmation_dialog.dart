@@ -11,12 +11,12 @@ class ConfirmationDialog extends StatelessWidget {
       title: Text(title),
       actions: [
         TextButton(
-          onPressed: () => Navigator.of(context).pop,
+          onPressed: () => Navigator.of(context).pop(),
           child: const Text('Отмена'),
         ),
         TextButton(
           onPressed: () {
-            onOk;
+            onOk();
             Navigator.of(context).pop();
           },
           child: const Text('Подтвердить'),
