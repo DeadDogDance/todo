@@ -2,14 +2,9 @@ import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import '../constants/assets.dart';
 
-class EmptyBranch extends StatefulWidget {
+class EmptyBranch extends StatelessWidget {
   const EmptyBranch({Key? key}) : super(key: key);
 
-  @override
-  State<EmptyBranch> createState() => _EmptyBranchState();
-}
-
-class _EmptyBranchState extends State<EmptyBranch> {
   @override
   Widget build(BuildContext context) {
     return Column(

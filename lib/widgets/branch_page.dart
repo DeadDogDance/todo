@@ -29,8 +29,8 @@ class _TaskListPageState extends State<TaskListPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: const Color(0xffb5c9fd),
-      appBar: createAppBar(),
-      body: _filteredTasks.isEmpty ? const EmptyBranch() : createListView(),
+      appBar: _createAppBar(),
+      body: _filteredTasks.isEmpty ? const EmptyBranch() : _createListView(),
       floatingActionButton: FloatingActionButton(
         onPressed: _showAddTaskDialog,
         tooltip: 'Add task',
@@ -74,8 +74,8 @@ class _TaskListPageState extends State<TaskListPage> {
     }
   }
 
-  Future<void> _showDeleteDialog() async {
-    await showDialog<String>(
+  Future<void> _showDeleteDialog() {
+    return showDialog<String>(
       context: context,
       builder: (_) => ConfirmationDialog(
         onOk: _deleteCompletedTasks,
@@ -131,7 +131,7 @@ class _TaskListPageState extends State<TaskListPage> {
     });
   }
 
-  ListView createListView() => ListView.separated(
+  Widget _createListView() => ListView.separated(
         physics: const AlwaysScrollableScrollPhysics(),
         padding: const EdgeInsets.all(10),
         itemCount: _filteredTasks.length,
@@ -146,7 +146,7 @@ class _TaskListPageState extends State<TaskListPage> {
         separatorBuilder: (_, __) => const Divider(),
       );
 
-  AppBar createAppBar() => AppBar(
+  AppBar _createAppBar() => AppBar(
         backgroundColor: const Color(0xff6202ee),
         title: Text(_title),
         actions: <Widget>[
