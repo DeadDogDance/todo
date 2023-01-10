@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:material_color_generator/material_color_generator.dart';
 import 'branch_page.dart';
 
 class TodoApp extends StatelessWidget {
@@ -9,16 +10,14 @@ class TodoApp extends StatelessWidget {
     return MaterialApp(
       title: 'Flutter Demo',
       theme: ThemeData(
-        primarySwatch: Colors.blue,
-        checkboxTheme: CheckboxThemeData(
-          fillColor: MaterialStateProperty.resolveWith<Color>(
-            (Set<MaterialState> states) {
-              if (states.contains(MaterialState.disabled)) {
-                return Colors.purple.withOpacity(.32);
-              }
-              return Colors.purple;
-            },
-          ),
+        primarySwatch: generateMaterialColor(
+          color: const Color(0xff6202ee),
+        ),
+        scaffoldBackgroundColor: generateMaterialColor(
+          color: const Color(0xffb5c9fd),
+        ),
+        floatingActionButtonTheme: const FloatingActionButtonThemeData(
+          backgroundColor: Color(0xff01a39d),
         ),
       ),
       home: const TaskListPage(),

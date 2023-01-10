@@ -1,14 +1,22 @@
 import 'package:flutter/material.dart';
 
 class ConfirmationDialog extends StatelessWidget {
-  const ConfirmationDialog({Key? key, required this.onOk, required this.title}) : super(key: key);
+  final String description;
   final VoidCallback onOk;
   final String title;
+
+  const ConfirmationDialog({
+    Key? key,
+    required this.description,
+    required this.onOk,
+    required this.title,
+  }) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
     return AlertDialog(
       title: Text(title),
+      content: Text(description),
       actions: [
         TextButton(
           onPressed: () => Navigator.of(context).pop(),

@@ -38,6 +38,7 @@ class _TaskCreationDialogState extends State<TaskCreationDialog> {
           decoration: const InputDecoration(
             hintText: 'Введите название задачи',
           ),
+          inputFormatters: [FilteringTextInputFormatter.deny(RegExp(r"\n"))],
           maxLength: 40,
           maxLengthEnforcement: MaxLengthEnforcement.none,
           minLines: 1,

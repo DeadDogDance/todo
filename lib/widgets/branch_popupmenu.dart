@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 
-class AppBarPopUpMenu extends StatelessWidget {
+class BranchPopUpMenu extends StatelessWidget {
   final bool isShowCompleted;
   final bool isShowFavorite;
   final VoidCallback onCompleted;
@@ -8,7 +8,7 @@ class AppBarPopUpMenu extends StatelessWidget {
   final VoidCallback onDelete;
   final VoidCallback onEdit;
 
-  const AppBarPopUpMenu({
+  const BranchPopUpMenu({
     Key? key,
     required this.isShowCompleted,
     required this.isShowFavorite,
