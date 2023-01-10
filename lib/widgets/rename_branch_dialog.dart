@@ -3,8 +3,10 @@ import 'package:flutter/services.dart';
 
 class RenameBranchDialog extends StatefulWidget {
   final String branchTitle;
-  const RenameBranchDialog({Key? key, required this.branchTitle})
-      : super(key: key);
+  const RenameBranchDialog({
+    Key? key,
+    required this.branchTitle,
+  }) : super(key: key);
 
   @override
   State<RenameBranchDialog> createState() => _RenameBranchDialogState();
@@ -41,6 +43,7 @@ class _RenameBranchDialogState extends State<RenameBranchDialog> {
           decoration: const InputDecoration(
             hintText: 'Введите название ветки',
           ),
+          inputFormatters: [FilteringTextInputFormatter.deny(RegExp(r"\n"))],
           maxLength: 40,
           maxLengthEnforcement: MaxLengthEnforcement.none,
           minLines: 1,
